@@ -7,7 +7,7 @@
 #include <unistd.h>
 #include <inttypes.h>
 #include <sys/ioctl.h>
-#include "../event.h"
+#include "event.h"
 #include "perf_rb.h"
 #include <errno.h>
 #include <stdbool.h>
