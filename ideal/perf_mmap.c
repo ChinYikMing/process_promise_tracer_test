@@ -7,8 +7,8 @@
 #include <unistd.h>
 #include <inttypes.h>
 #include <sys/ioctl.h>
-#include "event.h"
-#include "perf_rb.h"
+#include "../event.h"
+#include "../perf_rb.h"
 #include <errno.h>
 #include <stdbool.h>
 #include <assert.h>
@@ -70,7 +70,7 @@ int main(int argc, char **argv){
 			continue;
 		}
 
-		printf("buf_addr: %p, buf_size: %lu, buf_pgoff %lu, filename: %s\n", (void *)sample.buf_addr, 
+		printf("buf_addr: %p, buf_size: %lu, buf_pgoff %lu, filename: %s\n", (void *) sample.buf_addr, 
 										sample.buf_size,
 										sample.buf_pgoff,
 										sample.filename);
