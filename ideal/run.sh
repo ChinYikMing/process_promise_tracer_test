@@ -12,3 +12,5 @@ pkill main
 pkill perf_mmap
 
 make clean
+
+cat mmap_sample
