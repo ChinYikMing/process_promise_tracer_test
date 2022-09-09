@@ -1,0 +1,11 @@
+{
+    "files.associations": {
+        "ptrace.h": "c",
+        "test.h": "c",
+        "stat.h": "c",
+        "reg.h": "c",
+        "unistd.h": "c",
+        "stdio.h": "c",
+        "types.h": "c"
+    }
+}
