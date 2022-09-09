@@ -1,0 +1,2 @@
+sudo make
+./test mmap
