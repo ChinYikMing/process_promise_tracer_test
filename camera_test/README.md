@@ -10,4 +10,4 @@
 
 5. 重複以上，把 4 換成 sudo ./record_store_addr.sh
 
-6. 比對 camera_output mmap 的 buffer 有沒有在 load_sample 和 store_sample 裡面
+6. 比對 camera_output 檔案 mmap 的 buffer 有沒有在 load_sample 和 store_sample 裡面
