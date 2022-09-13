@@ -2,7 +2,7 @@
 
 2. 進到 camera_test 目錄，執行 make
 
-3. 執行 ./example/make
+3. 進到 camera_test/exmaple，執行 make && cd ../
 
 4. 一個 terminal 執行 sudo ./camera_run
 
