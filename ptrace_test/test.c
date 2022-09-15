@@ -59,7 +59,7 @@ int main(int argc, char *argv[]) {
     child = fork();
     if (child == 0) {
         ptrace(PTRACE_TRACEME, 0, NULL, NULL);
-        for(int i = 0; i < 3; i++) {
+        for(int i = 0; i < 10; i++) {
             memset(addr, 0, sizeof(1024));
 
             data[i].start = mmap(NULL, MMAP_SIZE, PROT_READ | PROT_WRITE, MAP_SHARED, fd, 0);
@@ -68,32 +68,33 @@ int main(int argc, char *argv[]) {
 
             struct user_regs_struct regs;
             ptrace(PTRACE_GETREGS, child, NULL, &regs);
-            printf("rax: %lld\n", regs.rax);
-            printf("rdi: %lld\n", regs.rdi);
-            printf("rsi: %lld\n", regs.rsi);
-            printf("rdx: %lld\n", regs.rdx);
-            printf("rcx: %lld\n", regs.rcx);
-            printf("rsp: %lld\n", regs.rsp);
-            printf("rsi: %lld\n", regs.rsi);
+            // printf("rax: %lld\n", regs.rax);
+            // printf("rdi: %lld\n", regs.rdi);
+            // printf("rsi: %lld\n", regs.rsi);
+            // printf("rdx: %lld\n", regs.rdx);
+            // printf("rcx: %lld\n", regs.rcx);
+            // printf("rsp: %lld\n", regs.rsp);
+            // printf("rsi: %lld\n", regs.rsi);
             printf("rip: %lld\n", regs.rip);
-            printf("rdx: %lld\n", regs.rdx);
-            printf("rdi: %lld\n", regs.rdi);
-            printf("rbx: %lld\n", regs.rbx);
-            printf("rbp: %lld\n", regs.rbp);
-            printf("r8 : %lld\n", regs.r8);
-            printf("r9 : %lld\n", regs.r9);
-            printf("r10: %lld\n", regs.r10);
-            printf("r11: %lld\n", regs.r11);
-            printf("r12: %lld\n", regs.r12);
-            printf("r13: %lld\n", regs.r13);
-            printf("r14: %lld\n", regs.r14);
-            printf("r15: %lld\n", regs.r15);
+            // printf("rdx: %lld\n", regs.rdx);
+            // printf("rdi: %lld\n", regs.rdi);
+            // printf("rbx: %lld\n", regs.rbx);
+            // printf("rbp: %lld\n", regs.rbp);
+            // printf("r8 : %lld\n", regs.r8);
+            // printf("r9 : %lld\n", regs.r9);
+            // printf("r10: %lld\n", regs.r10);
+            // printf("r11: %lld\n", regs.r11);
+            // printf("r12: %lld\n", regs.r12);
+            // printf("r13: %lld\n", regs.r13);
+            // printf("r14: %lld\n", regs.r14);
+            // printf("r15: %lld\n", regs.r15);
             printf("\n");
             ptrace(PTRACE_SYSCALL, child, NULL, NULL);
 
             sprintf(addr, "data[%d]: %lu\n", i, (uint64_t) data[i].start);
             fwrite(addr, sizeof(char), strlen(addr), addr_file);
             //printf("data[%d]: %p\n", i, data[i].start);
+            sleep(1);
         }
 
         sleep(1);
