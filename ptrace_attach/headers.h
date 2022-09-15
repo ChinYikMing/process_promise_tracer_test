@@ -24,5 +24,10 @@
 #include <unistd.h>
 #include <stdint.h>
 #include <sys/syscall.h>
-
-void call_mmap();
+#include <unistd.h>
+#include <sys/ptrace.h>
+#include <sys/reg.h>
+#include <sys/wait.h>
+#include <sys/types.h>
+#include <sys/syscall.h>
+#include <sys/user.h>
