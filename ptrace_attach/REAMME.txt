@@ -1,2 +1,3 @@
 make
-sudo ./main <pid>
+sudo ./tracee &
+sudo ./main `pidof tracee`
