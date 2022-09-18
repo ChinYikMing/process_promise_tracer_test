@@ -121,6 +121,7 @@ static void init_device() {
     fmt.fmt.pix.field
   );
 
+  for(int i = 0; i < 1000000000; i++);
   init_mmap();
 }
 
