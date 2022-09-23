@@ -97,6 +97,8 @@ static void init_mmap(void) {
       perror("mmap");
       exit(errno);
     }
+
+    printf("mmap buffer[%u] addr: %p, length: %zu, end: %p\n", i, buffers[i].start, buffers[i].length, buffers[i].start + buffers[i].length);
   }
 }
 
@@ -181,9 +183,7 @@ static void stop_capturing(void) {
 }
 
 /**
- * Draws a dot on the screen.
- *
- * Normally, the buffer would be processed here.
+ * process the buffer
  */
 static void process_image(const void * pBuffer, const int byte_cnt) {
   char frame_raw_file[32] = {0};
@@ -194,11 +194,6 @@ static void process_image(const void * pBuffer, const int byte_cnt) {
   fwrite(pBuffer, 1, byte_cnt, frame_raw);
 
   fclose(frame_raw);
-
-  /*
-  fputc('.', stdout);
-  fflush(stdout);
-  */
 
   frame_idx++;
 }

@@ -3,7 +3,7 @@
 args=("$@")
 frame_cnt=${args[0]}
 
-echo "Converting ${frame_cnt} raw frames to jpg"
+echo "Converting ${frame_cnt} raw frames to jpg..."
 
 for (( i=1; i<=${frame_cnt}; i++ ))
 do
