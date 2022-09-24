@@ -4,7 +4,8 @@ all:
 	gcc -o mycp -g mycp.c
 	gcc -o mystrcpy -g mystrcpy.c
 	gcc -o fdreadfile -g fdreadfile.c 
+	gcc -o fdwritefile -g fdwritefile.c 
 	gcc -o mmap -g mmap.c
 
 clean:
-	rm -f readfile writefile mycp mystrcpy fdreadfile mmap
+	rm -f readfile writefile mycp mystrcpy fdreadfile fdwritefile mmap
