@@ -326,10 +326,12 @@ int main(int argc, char *argv[]) {
   free(buffers);
   close(fd);
 
+ #ifdef RAW2JPG
   char frame_cnt_str[16] = {0};
   sprintf(frame_cnt_str, "%u", count);
   char * const args[] = {"./raw2jpg.sh", frame_cnt_str, NULL};
   execv("./raw2jpg.sh", args);
+ #endif
 
   return 0;
 }

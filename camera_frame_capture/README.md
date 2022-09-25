@@ -1,8 +1,10 @@
 # Run
 
-* make, compile the program
+* make, compile the program without converting raw frames to jpg images
 
-* ./frame-capture, capture 10 raw frames from camera and converted to jpg format to be displayed, ./frame-capture -c [frame_cnt] can change the raw frames count
+* make jpg, compile the program with converting raw frames to jpg images
+
+* ./frame-capture, capture 10 raw frames from camera, ./frame-capture -c [frame_cnt] can change the raw frames count
 
 * ./frame-capture -h, show usage
 
@@ -12,7 +14,7 @@
 
 * ../aslr.sh 0, turn off aslr
 
-* make, compile the program
+* make, compile the program without converting raw frames to jpg images
 
 * perf record -d -c 1000 -e cpu/event=0xd0,umask=0x81/pp ./frame-capture -c 100, umask=0x81 is all_load event, umask=0x82 is all_store event
 
