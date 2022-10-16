@@ -1,10 +1,22 @@
 # Run
 
+## For MJPEG format:
+
+* make jpeg, compile the program with mjpeg format
+
+* ./frame-capture, capture 10 raw frames from camera, ./frame-capture -c [frame_cnt] can change the frames count
+
+* ./frame-capture -h, show usage
+
+* make clean, remove all jpg images
+
+## For YUYV format:
+
 * make, compile the program without converting raw frames to jpg images
 
 * make jpg, compile the program with converting raw frames to jpg images
 
-* ./frame-capture, capture 10 raw frames from camera, ./frame-capture -c [frame_cnt] can change the raw frames count
+* ./frame-capture, capture 10 raw frames from camera, ./frame-capture -c [frame_cnt] can change the frames count
 
 * ./frame-capture -h, show usage
 

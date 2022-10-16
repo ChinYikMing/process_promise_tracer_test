@@ -108,6 +108,10 @@ static void init_device() {
 
   // Get the format with the largest index and use it
   while(0 == xioctl(fd, VIDIOC_ENUM_FMT, &fmtdesc)) {
+#ifdef MJPEG
+    if(0 == strcmp((char *)fmtdesc.description, "Motion-JPEG"))
+	    break;
+#endif
     fmtdesc.index++;
   }
   printf("\nUsing format: %s\n", fmtdesc.description);
@@ -187,7 +191,13 @@ static void stop_capturing(void) {
  */
 static void process_image(const void * pBuffer, const int byte_cnt) {
   char frame_raw_file[32] = {0};
+
+#ifdef MJPEG
+  sprintf(frame_raw_file, "frame%d.jpg", frame_idx);
+#else
   sprintf(frame_raw_file, "frame%d.raw", frame_idx);
+#endif
+
   FILE *frame_raw = fopen(frame_raw_file, "w+");
   assert(frame_raw != NULL);
 
