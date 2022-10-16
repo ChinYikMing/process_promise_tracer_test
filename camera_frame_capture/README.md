@@ -4,13 +4,13 @@
 
 * make mjpeg, compile the program with mjpeg format
 
+* ./frame-capture, capture 10 raw frames from camera, ./frame-capture -c [frame_cnt] can change the frames count
+
 * make video, make video with frames
 
 * make playvideo, play video
 
 * make showvideoinfo, show video info
-
-* ./frame-capture, capture 10 raw frames from camera, ./frame-capture -c [frame_cnt] can change the frames count
 
 * ./frame-capture -h, show usage
 
@@ -20,13 +20,13 @@
 
 * make yuyv, compile the program with converting raw frames to jpg images
 
+* ./frame-capture, capture 10 raw frames from camera, ./frame-capture -c [frame_cnt] can change the frames count
+
 * make video, make video with frames
 
 * make playvideo, play video
 
 * make showvideoinfo, show video info
-
-* ./frame-capture, capture 10 raw frames from camera, ./frame-capture -c [frame_cnt] can change the frames count
 
 * ./frame-capture -h, show usage
 
