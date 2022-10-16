@@ -12,12 +12,22 @@
 #include <errno.h>
 #include <fcntl.h>
 #include <linux/videodev2.h>
+#include <sys/ioctl.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <sys/mman.h>
 #include <sys/time.h>
 #include <unistd.h>
+#include <opencv2/core/core.hpp>
+#include <opencv2/highgui/highgui.hpp>
+
+using namespace cv;
+
+Mat mat;
+
+#define IMAGEWIDTH 640
+#define IMAGEHEIGHT 480
 
 void usage(const char *prog){
 	fprintf(stderr, "%s -h, show this usage\n", prog);
@@ -28,9 +38,11 @@ void usage(const char *prog){
 static const char DEVICE[] = "/dev/video0";
 
 int count = 10; // Record 10 frames, default
+int frame_seq; // sequence of frame file
+int frame_total;
 int frame_idx = 1;
 int fd;
-struct {
+struct buf {
   void *start;
   size_t length;
 } *buffers;
@@ -64,7 +76,7 @@ static void init_mmap(void) {
     exit(EXIT_FAILURE);
   }
 
-  buffers = calloc(reqbuf.count, sizeof(*buffers));
+  buffers = (struct buf *) calloc(reqbuf.count, sizeof(*buffers));
   assert(buffers != NULL);
 
   num_buffers = reqbuf.count;
@@ -98,7 +110,7 @@ static void init_mmap(void) {
       exit(errno);
     }
 
-    printf("mmap buffer[%u] addr: %p, length: %zu, end: %p\n", i, buffers[i].start, buffers[i].length, buffers[i].start + buffers[i].length);
+    printf("mmap buffer[%u] addr: %p, length: %zu, end: %p\n", i, buffers[i].start, buffers[i].length, ((char *) buffers[i].start) + buffers[i].length);
   }
 }
 
@@ -189,13 +201,64 @@ static void stop_capturing(void) {
 /**
  * process the buffer
  */
-static void process_image(const void * pBuffer, const int byte_cnt) {
+static void process_image(void * pBuffer, const int byte_cnt) {
   char frame_raw_file[32] = {0};
+  char frame_raw_file_fmt[32] = {0};
 
 #ifdef MJPEG
-  sprintf(frame_raw_file, "frame%d.jpg", frame_idx);
+  if(frame_idx <= 9){
+	strcpy(frame_raw_file_fmt, "frame00000000%d.jpg");
+  } else if(frame_idx <= 99){
+	strcpy(frame_raw_file_fmt, "frame0000000%d.jpg");
+  } else if(frame_idx <= 999){
+	strcpy(frame_raw_file_fmt, "frame000000%d.jpg");
+  } else if(frame_idx <= 9999){
+	strcpy(frame_raw_file_fmt, "frame00000%d.jpg");
+  } else if(frame_idx <= 99999){
+	strcpy(frame_raw_file_fmt, "frame0000%d.jpg");
+  } else if(frame_idx <= 999999){
+	strcpy(frame_raw_file_fmt, "frame000%d.jpg");
+  } else if(frame_idx <= 9999999){
+	strcpy(frame_raw_file_fmt, "frame00%d.jpg");
+  } else if(frame_idx <= 99999999){
+	strcpy(frame_raw_file_fmt, "frame0%d.jpg");
+  } else if(frame_idx <= 999999999){
+	strcpy(frame_raw_file_fmt, "frame%d.jpg");
+  }
+  sprintf(frame_raw_file, frame_raw_file_fmt, frame_idx);
 #else
-  sprintf(frame_raw_file, "frame%d.raw", frame_idx);
+  if(frame_idx <= 9){
+	strcpy(frame_raw_file_fmt, "frame00000000%d.raw");
+  } else if(frame_idx <= 99){
+	strcpy(frame_raw_file_fmt, "frame0000000%d.raw");
+  } else if(frame_idx <= 999){
+	strcpy(frame_raw_file_fmt, "frame000000%d.raw");
+  } else if(frame_idx <= 9999){
+	strcpy(frame_raw_file_fmt, "frame00000%d.raw");
+  } else if(frame_idx <= 99999){
+	strcpy(frame_raw_file_fmt, "frame0000%d.raw");
+  } else if(frame_idx <= 999999){
+	strcpy(frame_raw_file_fmt, "frame000%d.raw");
+  } else if(frame_idx <= 9999999){
+	strcpy(frame_raw_file_fmt, "frame00%d.raw");
+  } else if(frame_idx <= 99999999){
+	strcpy(frame_raw_file_fmt, "frame0%d.raw");
+  } else if(frame_idx <= 999999999){
+	strcpy(frame_raw_file_fmt, "frame%d.raw");
+  }
+  sprintf(frame_raw_file, frame_raw_file_fmt, frame_idx);
+#endif
+
+  /* show bytes
+  for(int i = 0; i < byte_cnt; i++){
+  	printf("%d ", *((char *) pBuffer + i));
+  }
+  printf("\n");
+  */
+
+#ifdef MJPEG
+  Mat rawData(1, byte_cnt, CV_8SC1, pBuffer);
+  mat = imdecode(rawData, IMREAD_ANYDEPTH | IMREAD_ANYCOLOR);
 #endif
 
   FILE *frame_raw = fopen(frame_raw_file, "w+");
@@ -235,6 +298,12 @@ static int read_frame(void) {
 
   process_image(buffers[buffer.index].start, buffer.bytesused);
 
+#ifdef MJPEG
+  imshow("live" , mat);
+  if((waitKey(1)) == 'q')
+	exit(0);
+#endif
+
   // Enqueue the buffer again
   if (-1 == xioctl(fd, VIDIOC_QBUF, &buffer)) {
     perror("VIDIOC_QBUF");
@@ -250,8 +319,8 @@ static int read_frame(void) {
  * See https://www.gnu.org/software/libc/manual/html_node/Waiting-for-I_002fO.html
  */
 static void main_loop(void) {
-  int local_count = count;
-  while(local_count-- > 0) {
+  frame_total = count;
+  while(frame_total-- > 0) {
 
     fd_set fds;
     struct timeval tv;
@@ -294,6 +363,7 @@ static void main_loop(void) {
       if (read_frame())
 	// Go to next iterartion of fhe while loop; 0 means no frame is ready in the outgoing queue.
 	break;
+
     }
   }
   

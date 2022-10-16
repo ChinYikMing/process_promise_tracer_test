@@ -1,14 +1,21 @@
-CC=gcc
-CCFLAGS=-Wall -g
+CC=g++
+CCFLAGS=-Wall -g `pkg-config --cflags opencv4`
+CCLIBS=`pkg-config --libs opencv4`
 
-frame-capture: frame-capture.c
-	$(CC) $(CCFLAGS) $^ -o $@
+mjpeg: frame-capture.cpp
+	$(CC) $(CCFLAGS) -DMJPEG $^ -o frame-capture $(CCLIBS)
 
-mjpeg: frame-capture.c
-	$(CC) $(CCFLAGS) -DMJPEG $^ -o frame-capture
+mjpegvideo: *.jpg
+	ffmpeg -framerate 30 -i frame%09d.jpg output.mp4	
 
-jpg: frame-capture.c
-	$(CC) $(CCFLAGS) -DRAW2JPG $^ -o frame-capture
+playvideo: output.mp4
+	ffplay output.mp4
+
+showvideoinfo: output.mp4
+	ffprobe output.mp4
+
+yuyv: frame-capture.cpp
+	$(CC) $(CCFLAGS) -DRAW2JPG $^ -o frame-capture $(CCLIBS)
 
 clean:
 	rm -f frame-capture *.raw *.jpg
