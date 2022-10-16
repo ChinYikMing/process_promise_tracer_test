@@ -2,7 +2,7 @@
 
 ## For MJPEG format:
 
-* make jpeg, compile the program with mjpeg format
+* make mjpeg, compile the program with mjpeg format
 
 * ./frame-capture, capture 10 raw frames from camera, ./frame-capture -c [frame_cnt] can change the frames count
 
