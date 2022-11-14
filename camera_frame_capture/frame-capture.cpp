@@ -25,6 +25,7 @@
 using namespace cv;
 
 Mat mat;
+VideoWriter outputVideo;
 
 #define IMAGEWIDTH 640
 #define IMAGEHEIGHT 480
@@ -112,6 +113,7 @@ static void init_mmap(void) {
 
     printf("mmap buffer[%u] addr: %p, length: %zu, end: %p\n", i, buffers[i].start, buffers[i].length, ((char *) buffers[i].start) + buffers[i].length);
   }
+    printf("mat addr: %p\n", &mat);
 }
 
 static void init_device() {
@@ -131,8 +133,8 @@ static void init_device() {
   struct v4l2_format fmt = {0};
   fmt.type = V4L2_BUF_TYPE_VIDEO_CAPTURE;
 
-  fmt.fmt.pix.width = 640;
-  fmt.fmt.pix.height = 480;
+  fmt.fmt.pix.width = IMAGEWIDTH;
+  fmt.fmt.pix.height = IMAGEHEIGHT;
   fmt.fmt.pix.pixelformat = fmtdesc.pixelformat;
   fmt.fmt.pix.field = V4L2_FIELD_NONE;
 
@@ -261,12 +263,14 @@ static void process_image(void * pBuffer, const int byte_cnt) {
   mat = imdecode(rawData, IMREAD_ANYDEPTH | IMREAD_ANYCOLOR);
 #endif
 
+  /*
   FILE *frame_raw = fopen(frame_raw_file, "w+");
   assert(frame_raw != NULL);
 
   fwrite(pBuffer, 1, byte_cnt, frame_raw);
 
   fclose(frame_raw);
+  */
 
   frame_idx++;
 }
@@ -298,11 +302,15 @@ static int read_frame(void) {
 
   process_image(buffers[buffer.index].start, buffer.bytesused);
 
+ // outputVideo.write(mat);
+
+  /*
 #ifdef MJPEG
   imshow("live" , mat);
   if((waitKey(1)) == 'q')
 	exit(0);
 #endif
+*/
 
   // Enqueue the buffer again
   if (-1 == xioctl(fd, VIDIOC_QBUF, &buffer)) {
@@ -319,6 +327,17 @@ static int read_frame(void) {
  * See https://www.gnu.org/software/libc/manual/html_node/Waiting-for-I_002fO.html
  */
 static void main_loop(void) {
+
+#ifdef MJPEG
+  int fourcc = VideoWriter::fourcc('M', 'J', 'P', 'G');
+  Size size = Size(IMAGEWIDTH, IMAGEHEIGHT);
+  outputVideo.open("./outputvideo.avi", fourcc, 30, size, true);
+  if(!outputVideo.isOpened()){
+  	printf("could not open the output video\n");
+	exit(1);
+  }
+#endif
+
   frame_total = count;
   while(frame_total-- > 0) {
 
