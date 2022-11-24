@@ -67,8 +67,6 @@ struct buf {
 unsigned int num_buffers;
 struct v4l2_requestbuffers reqbuf = {0};
 
-int clientsd = 0;
-
 /**
  * Wrapper around ioctl calls.
  */
@@ -280,7 +278,6 @@ static void process_image(void * pBuffer, const int byte_cnt) {
 #ifdef MJPEG
   Mat rawData(1, byte_cnt, CV_8SC1, pBuffer);
   mat = imdecode(rawData, IMREAD_ANYDEPTH | IMREAD_ANYCOLOR);
-  send(clientsd, mat.data, mat.total()*mat.elemSize(), 0);
   outputVideo.write(mat);
 #endif
 
@@ -416,47 +413,88 @@ int main(int argc, char *argv[]) {
         return errno;
     }
 
-    char serverIp[10] = "127.0.0.1";
-    int port = 8080; 
-
-    struct hostent* host = gethostbyname(serverIp); 
-    sockaddr_in sendSockAddr;   
-    bzero((char*)&sendSockAddr, sizeof(sendSockAddr)); 
-    sendSockAddr.sin_family = AF_INET; 
-    sendSockAddr.sin_addr.s_addr = inet_addr(inet_ntoa(*(struct in_addr*)*host->h_addr_list));
-    sendSockAddr.sin_port = htons(port);
-    int clientSd = socket(AF_INET, SOCK_STREAM, 0);
-    clientsd = clientSd;
-    int status = connect(clientSd, (sockaddr*) &sendSockAddr, sizeof(sendSockAddr));
-    if(status < 0) {
-        cout<<"Error connecting to socket!"<<endl;
-        return -1;
+    char serverIp[10] = "127.0.0.1"; char msg[1500];
+    int port = 8080, child = fork(); 
+    if (child < 0) {
+        cerr << "Fork error";
+        exit(1);
     }
-    cout << "Connected to the server!" << endl;
 
-    init_device();
+    if (child == 0) {
+        sleep(5);
 
-    start_capturing();
+        init_device();
 
-    main_loop();
+        start_capturing();
 
-    stop_capturing();  
-
-    close(clientSd);
-    cout << "Connection closed" << endl;
+        main_loop();
     
-    // Cleanup
-    for (unsigned int i = 0; i < reqbuf.count; i++)
-        munmap(buffers[i].start, buffers[i].length);
-    free(buffers);
-    close(fd);
+        stop_capturing();  
+        
+        // Cleanup
+        for (unsigned int i = 0; i < reqbuf.count; i++)
+            munmap(buffers[i].start, buffers[i].length);
+        free(buffers);
+        close(fd);
 
-    #ifdef RAW2JPG
-    char frame_cnt_str[16] = {0};
-    sprintf(frame_cnt_str, "%u", frame_count);
-    char * const args[] = {"./raw2jpg.sh", frame_cnt_str, NULL};
-    execv("./raw2jpg.sh", args);
-    #endif
+        #ifdef RAW2JPG
+        char frame_cnt_str[16] = {0};
+        sprintf(frame_cnt_str, "%u", frame_count);
+        char * const args[] = {"./raw2jpg.sh", frame_cnt_str, NULL};
+        execv("./raw2jpg.sh", args);
+        #endif
 
-    return 0;
+        return 0;
+    }
+
+    else {
+        int s;
+        wait(&s);
+            
+        struct hostent* host = gethostbyname(serverIp); 
+        sockaddr_in sendSockAddr;   
+        bzero((char*)&sendSockAddr, sizeof(sendSockAddr)); 
+        sendSockAddr.sin_family = AF_INET; 
+        sendSockAddr.sin_addr.s_addr = inet_addr(inet_ntoa(*(struct in_addr*)*host->h_addr_list));
+        sendSockAddr.sin_port = htons(port);
+        int clientSd = socket(AF_INET, SOCK_STREAM, 0);
+        int status = connect(clientSd, (sockaddr*) &sendSockAddr, sizeof(sendSockAddr));
+        if(status < 0) {
+            cout<<"Error connecting to socket!"<<endl;
+            return -1;
+        }
+        cout << "Connected to the server!" << endl;
+        int bytesRead, bytesWritten = 0;
+        struct timeval start1, end1;
+        gettimeofday(&start1, NULL);
+        while(1) {
+            cout << ">";
+            string data;
+            getline(cin, data);
+            memset(&msg, 0, sizeof(msg));
+            strcpy(msg, data.c_str());
+            if(data == "exit") {
+                send(clientSd, (char*)&msg, strlen(msg), 0);
+                break;
+            }
+            bytesWritten += send(clientSd, (char*)&msg, strlen(msg), 0);
+            bytesWritten += send(clientSd, mat.data, mat.total()*mat.elemSize(), 0);
+            cout << "Awaiting server response..." << endl;
+            memset(&msg, 0, sizeof(msg));
+            bytesRead += recv(clientSd, (char*)&msg, sizeof(msg), 0);
+            if(!strcmp(msg, "exit")) {
+                cout << "Server has quit the session" << endl;
+                break;
+            }
+            cout << "Server: " << msg << endl;
+        }
+        gettimeofday(&end1, NULL);
+        close(clientSd);
+        cout << "********Session********" << endl;
+        cout << "Bytes written: " << bytesWritten << 
+        " Bytes read: " << bytesRead << endl;
+        cout << "Elapsed time: " << (end1.tv_sec- start1.tv_sec) 
+        << " secs" << endl;
+        cout << "Connection closed" << endl;
+    }
 }
